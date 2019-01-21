@@ -1,0 +1,80 @@
+$(document).ready(function(){
+// Initialize Firebase
+var config = {
+  apiKey: "AIzaSyAjQXqBFNNgHuAvhFxFiyhPKrlpBjBu4Sc",
+  authDomain: "trainfirebaseprojecthw.firebaseapp.com",
+  databaseURL: "https://trainfirebaseprojecthw.firebaseio.com",
+  projectId: "trainfirebaseprojecthw",
+  storageBucket: "trainfirebaseprojecthw.appspot.com",
+  messagingSenderId: "497687707038"
+};
+firebase.initializeApp(config);
+var database = firebase.database();
+
+var timeRN = new Date(); 
+$("#currentTime").text("Current Time: " + timeRN);
+
+//user input variables
+var trainName = "";
+var destination = "";
+var trainTime = "";
+var frequency = 0;
+
+$("#submitInfo").on("click", function(event){
+  event.preventDefault();
+
+  trainName = $("#TrainName").val().trim();
+  destination = $("#Destination").val().trim();
+  trainTime = $("#TrainTime").val().trim();
+  frequency = $("#Frequency").val().trim();
+  
+  database.ref().push({
+      trainName: trainName,
+      destination: destination,
+      trainTime: trainTime,
+      frequency: frequency,
+      dateAdded: firebase.database.ServerValue.TIMESTAMP
+  });
+
+});
+
+//only allows the user to clear train info input until session is over
+//localstorage.clear()
+//sessionstorage.clear()
+$("#clearInfo").on("click", function(event){
+  event.preventDefault();
+  $("td").empty();
+})
+
+database.ref().on("child_added", function(childSnapshot){
+  console.log(childSnapshot.val().trainName);
+  console.log(childSnapshot.val().destination);
+  console.log(childSnapshot.val().trainTime);
+  console.log(childSnapshot.val().frequency);
+
+  var userTime = moment(childSnapshot.val().trainTime, "hh:mm");
+  //the time that the user feeds into input
+  var difference = moment().diff(moment(userTime), "minutes"); 
+  // calculating the time now (moment()) b/n the user's time in minutes
+  var timeRemaining = difference % childSnapshot.val().frequency;
+  //calculates how much time is left based on the time & how frequently it comes (in minutes)
+  var minsAway = childSnapshot.val().frequency - timeRemaining;
+  var nextTrain = moment().add(minsAway, "minutes")
+
+  console.log(userTime);
+  console.log(difference);
+  console.log(timeRemaining);
+  console.log(minsAway);
+  console.log(nextTrain);
+
+  var addRow = $("<tr></tr>")
+  //adding each individual cell(td) to each row(tr)
+  addRow.append("<td>" + childSnapshot.val().trainName + "</td>");
+  addRow.append("<td>" + childSnapshot.val().destination + "</td>");
+  addRow.append("<td>" + childSnapshot.val().trainTime + "</td>")
+  addRow.append("<td>" + childSnapshot.val().frequency + "</td>");
+  addRow.append("<td>" + moment(nextTrain).format("hh:mm") + "</td>");
+  addRow.append("<td>" + minsAway + "</td>");
+  $(".table").prepend(addRow);
+});
+});
