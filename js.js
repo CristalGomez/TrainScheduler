@@ -37,13 +37,13 @@ $("#submitInfo").on("click", function(event){
   });
 
 });
-
 //only allows the user to clear train info input until session is over
 //localstorage.clear()
 //sessionstorage.clear()
 $("#clearInfo").on("click", function(event){
   event.preventDefault();
   $("td").empty();
+  database.ref().set("/", null)
 })
 
 database.ref().on("child_added", function(childSnapshot){
@@ -67,14 +67,15 @@ database.ref().on("child_added", function(childSnapshot){
   console.log(minsAway);
   console.log(nextTrain);
 
+
   var addRow = $("<tr></tr>")
   //adding each individual cell(td) to each row(tr)
-  addRow.append("<td>" + childSnapshot.val().trainName + "</td>");
-  addRow.append("<td>" + childSnapshot.val().destination + "</td>");
-  addRow.append("<td>" + childSnapshot.val().trainTime + "</td>")
-  addRow.append("<td>" + childSnapshot.val().frequency + "</td>");
-  addRow.append("<td>" + moment(nextTrain).format("hh:mm") + "</td>");
-  addRow.append("<td>" + minsAway + "</td>");
+  addRow.append("<td>" + childSnapshot.val().trainName + "</td>")
+  .append("<td>" + childSnapshot.val().destination + "</td>")
+  .append("<td>" + childSnapshot.val().trainTime + "</td>")
+  .append("<td>" + childSnapshot.val().frequency + "</td>")
+  .append("<td>" + moment(nextTrain).format("hh:mm") + "</td>")
+  .append("<td>" + minsAway + "</td>");
   $(".table").prepend(addRow);
 });
 });
